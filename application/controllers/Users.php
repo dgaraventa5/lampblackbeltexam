@@ -5,7 +5,7 @@ class Users extends CI_Controller {
 	public function __construct()
     {
         parent::__construct();
-        // $this->load->model('user');
+        $this->load->model('user');
     }
 
     public function index() {
@@ -27,6 +27,7 @@ class Users extends CI_Controller {
         $this->form_validation->set_rules("email", "Email", "valid_email|required|trim|is_unique[users.email]");
         $this->form_validation->set_rules("password", "Password", "trim|required|min_length[8]");
         $this->form_validation->set_rules("confirm_password", "Confirm Password", "trim|required|matches[password]");
+        $this->form_validation->set_rules("DOB", "Date of Birth", "required");
         //if fails send back to homepage
         if ($this->form_validation->run() == FALSE) {
             $this->session->set_flashdata('registration_error', validation_errors());
@@ -38,13 +39,15 @@ class Users extends CI_Controller {
         		'name' => $this->input->post('name'),
         		'alias' => $this->input->post('alias'),
         		'email' => $this->input->post('email'),
-        		'password' => md5($this->input->post('password'))
+        		'password' => md5($this->input->post('password')),
+                'date_of_birth' => date($this->input->post('DOB'))
         		);
+            // var_dump($user['date_of_birth']); die();
         	$user['id'] = $this->user->register_new_user($user);
         	//set to logged in, set session data, and send to home view. CAN I MOVE THIS TO DIFFERENT FUNCTION (repeats w/ login)
         	$user['is_logged_in'] = true;
         	$this->session->set_userdata($user);
-        	redirect('/books');
+        	redirect('/pokes');
         }
 	}
 
@@ -73,9 +76,7 @@ class Users extends CI_Controller {
         			'is_logged_in' => true
         			);
         		$this->session->set_userdata($user);
-                redirect('/books/');
-        		// $this->load->view('home');
-        		// redirect('/books');
+                redirect('/pokes');
         	}
         	else {
         		$this->session->set_flashdata("login_error", "Invalid email or password!");
@@ -84,14 +85,6 @@ class Users extends CI_Controller {
         }
 	}
 
-    public function view_user($user_id) {
-        //load model for users
-        // $user_info = $this->user->get_user_info($user_id);
-        // $users_reviews = $this->user->get_reviews_by_user($user_id);
-        // $data['user_info'] = $user_info;
-        // $data['users_reviews'] = $users_reviews;
-        // $this->load->view('user_page', $data);
-    }
 
     public function log_out()
     {
